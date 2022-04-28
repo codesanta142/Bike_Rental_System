@@ -6,7 +6,7 @@ An online bike rental system which provides facility to the people to look for b
 
 ## Problem Statement
 
-[DBMS Mini Project](./OOMMiniProject10-Software-Drawing-2D-Shapes-&-3D-Graphics.pdf)
+[DBMS Mini Project](./ProblemStatement20.pdf)
 
 ------------------------------------------------------------------------------------------------
 
