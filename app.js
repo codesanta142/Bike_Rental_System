@@ -4,6 +4,8 @@ const session = require("express-session");
 const path = require("path");
 const ejs = require("ejs");
 const niceinvoice = require("nice-invoice");
+const req = require("express/lib/request");
+const res = require("express/lib/response");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -62,6 +64,22 @@ app.post("/auth", function (request, response) {
     response.end();
   }
 });
+
+//logout user
+
+app.post("/signout", function (request, response) {
+  if (request.session.loggedin) {
+    // Execute SQL query that'll select the account from the database based on the specified username and password
+
+    request.session.loggedin = false;
+    // Redirect to home page
+    response.redirect("/");
+  } else {
+    response.send("Cannot logout");
+  }
+  // response.end();
+});
+
 // http://localhost:3000/home
 app.get("/userdashboard", function (request, response) {
   // If the user is loggedin
@@ -240,6 +258,7 @@ app.post("/info", function (req, res, next) {
     // password: req.body.password,
     // confirm_password: req.body.confirm_password,
   };
+
   // check unique email address
   var sql = "SELECT * FROM bikes WHERE email =?";
   connection.query(sql, [inputData.email], function (err, data, fields) {
@@ -309,65 +328,94 @@ app.post("/info1", function (req, res, next) {
 });
 // adding data into users of mybookings
 app.get("/mybooking", function (req, res, next) {
-  var sql = `SELECT * FROM bikes where name="${req.session.username}"`;
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("mybooking", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = `SELECT * FROM bikes where name="${req.session.username}"`;
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("mybooking", { title: "User List", userData: data });
+    });
+  } else {
+    // Not logged in
+    res.send("Please login to view this page!");
+  }
 });
 //adding data into bookings
 app.get("/reservation", function (req, res, next) {
-  var sql = "SELECT * FROM bikes";
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("reservation", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = "SELECT * FROM bikes";
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("reservation", { title: "User List", userData: data });
+    });
+  } else {
+    res.send("Please login to view this page!");
+  }
 });
 
 //adding bikes cards for admin
 app.get("/addbikes", function (req, res, next) {
-  var sql = "SELECT * FROM add_bikes";
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("addbikes", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = "SELECT * FROM add_bikes";
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("addbikes", { title: "User List", userData: data });
+    });
+  } else {
+    res.send("Please login to view this page!");
+  }
 });
 
 //adding bikes cards for user
 app.get("/bikes", function (req, res, next) {
-  var sql = "SELECT * FROM add_bikes";
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("bikes", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = "SELECT * FROM add_bikes";
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("bikes", { title: "User List", userData: data });
+    });
+  } else {
+    res.send("Please login to view this page!");
+  }
 });
 
 //invoice details
 app.get("/invoice", function (req, res, next) {
-  var sql = "SELECT * FROM bikes";
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("invoice", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = "SELECT * FROM bikes";
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("invoice", { title: "User List", userData: data });
+    });
+  } else {
+    res.send("  Please login to view this page");
+  }
 });
 
 //user profile details
 
 app.get("/userprofile", function (req, res, next) {
-  var sql = `SELECT * FROM user_profiles WHERE username="${req.session.username}"`;
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("userprofile", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = `SELECT * FROM user_profiles WHERE username="${req.session.username}"`;
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("userprofile", { title: "User List", userData: data });
+    });
+  } else {
+    res.send("Please login to view this page!");
+  }
 });
 //admin profile details
 
 app.get("/adminprofile", function (req, res, next) {
-  var sql = `SELECT * FROM admin WHERE username="${req.session.username}"`;
-  connection.query(sql, function (err, data, fields) {
-    if (err) throw err;
-    res.render("adminprofile", { title: "User List", userData: data });
-  });
+  if (req.session.loggedin) {
+    var sql = `SELECT * FROM admin WHERE username="${req.session.username}"`;
+    connection.query(sql, function (err, data, fields) {
+      if (err) throw err;
+      res.render("adminprofile", { title: "User List", userData: data });
+    });
+  } else {
+    res.send("Please login to view this page!");
+  }
 });
 
 // update password of user
@@ -480,39 +528,67 @@ app.get("/userlogin", function (request, response) {
 
 //cancel
 app.get("/deleteform", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/static/deleteform.html"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.sendFile(path.join(__dirname + "/static/deleteform.html"));
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 
 app.get("/updatepass", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/static/updatepass.html"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.sendFile(path.join(__dirname + "/static/updatepass.html"));
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/updatepass1", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/static/updatepass1.html"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.sendFile(path.join(__dirname + "/static/updatepass1.html"));
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 
 app.get("/bikes", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/views/bikes.ejs"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("bikes");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/userregister", function (request, response) {
   // Render login template
-  response.sendFile(path.join(__dirname + "/static/userregister.html"));
+  response.sendFile(path.join(__dirname + "/static/userregsiter.html"));
 });
 app.get("/userprofile", function (request, response) {
-  // Render login template
-  response.render("userprofile");
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("userprofile");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 
 app.get("/mybooking", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/views/mybooking.ejs"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("mybooking");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/invoice", function (request, response) {
-  // Render login template
-  response.render("invoice");
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("invoice");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 
 app.get("/userinfo", function (request, response) {
@@ -522,33 +598,67 @@ app.get("/userinfo", function (request, response) {
   });
 });
 app.get("/addbikes", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/views/addbikes.ejs"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("addbikes");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/adminlogin", function (request, response) {
   // Render login template
   response.sendFile(path.join(__dirname + "/static/adminlogin.html"));
 });
 app.get("/adminprofile", function (request, response) {
-  // Render login template
-  response.render("adminprofile");
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("adminprofile");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/reservation", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/views/reservation.ejs"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.render("reservation");
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/buybike", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/static/buybike.html"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.sendFile(path.join(__dirname + "/static/buybike.html"));
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 app.get("/plusbikes", function (request, response) {
-  // Render login template
-  response.sendFile(path.join(__dirname + "/static/plusbikes.html"));
+  if (request.session.loggedin) {
+    // Render login template
+    response.sendFile(path.join(__dirname + "/static/plusbikes.html"));
+  } else {
+    response.send("Please login to view this page!");
+  }
 });
 
 app.get("/adminregister", function (request, response) {
+  if (request.session.loggedin) {
+    // Render login template
+    response.sendFile(path.join(__dirname + "/static/adminregister.html"));
+  } else {
+    response.send("Please login to view this page!");
+  }
+});
+
+app.get("/contact", function (request, response) {
   // Render login template
-  response.sendFile(path.join(__dirname + "/static/adminregister.html"));
+  response.sendFile(path.join(__dirname + "/static/contact.html"));
+});
+
+app.get("/features", function (request, response) {
+  // Render login template
+  response.sendFile(path.join(__dirname + "/static/features.html"));
 });
 
 app.listen(3000);
