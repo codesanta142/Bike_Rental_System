@@ -29,7 +29,7 @@ USE `nodelogin`;
 --   PRIMARY KEY (`id`)
 -- ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 
--- INSERT INTO `admin` (`id`, `username`, `password`, `email`) VALUES (1, 'kirti', 'kirti', 'kirti@kirti.com');
+-
 
 -- CREATE TABLE IF NOT EXISTS `bikes` (
 --   `id` int(11) NOT NULL AUTO_INCREMENT,

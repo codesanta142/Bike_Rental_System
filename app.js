@@ -563,7 +563,7 @@ app.get("/bikes", function (request, response) {
 });
 app.get("/userregister", function (request, response) {
   // Render login template
-  response.sendFile(path.join(__dirname + "/static/userregsiter.html"));
+  response.sendFile(path.join(__dirname + "/static/userregister.html"));
 });
 app.get("/userprofile", function (request, response) {
   if (request.session.loggedin) {
