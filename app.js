@@ -197,7 +197,7 @@ app.post("/auth2", function (req, res, next) {
       var msg = "Your are successfully registered";
     }
     console.log(msg);
-    res.sendFile(path.join(__dirname + "/static/userdashboard.html"));
+    res.redirect("/userlogin");
   });
 });
 
